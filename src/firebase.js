@@ -28,8 +28,8 @@ const db = getFirestore(app);
 const auth = getAuth();
 auth.languageCode = 'it';
 
-const signinCard = document.querySelector('.signin-card');
-const googleSigninButton = document.querySelector('.google-signin-button');
+const signinCard = document.querySelector('#signin-card');
+const googleSigninButton = document.querySelector('#google-signin-button');
 
 // check if signed in
 onAuthStateChanged(auth, (user) => {
