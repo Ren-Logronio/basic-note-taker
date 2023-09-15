@@ -43,6 +43,14 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
+signOut(auth).then(() => {
+    // Sign-out successful.
+    console.log('signed out');
+}).catch((error) => {
+    // An error happened.
+    console.log('error signing out');
+});
+
 googleSigninButton.addEventListener('click', ()=>{
     // sign in to google
     signInWithPopup(auth, provider).then((result) => {
@@ -55,8 +63,7 @@ googleSigninButton.addEventListener('click', ()=>{
     // IdP data available using getAdditionalUserInfo(result)
     // ...
 
-    // alert user welcome
-    window.alert(`Welcome`);
+    // alert user welcom
 
     }).catch((error) => {
         // Handle Errors here.
