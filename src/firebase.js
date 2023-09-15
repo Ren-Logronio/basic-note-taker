@@ -55,6 +55,10 @@ document.addEventListener('click', ()=>{
     // The signed-in user info.
     // IdP data available using getAdditionalUserInfo(result)
     // ...
+
+    // alert user welcome
+    window.alert(`Welcome`);
+
   }).catch((error) => {
     // Handle Errors here.
     const errorCode = error.code;
@@ -63,6 +67,7 @@ document.addEventListener('click', ()=>{
     const email = error.customData.email;
     // The AuthCredential type that was used.
     const credential = GoogleAuthProvider.credentialFromError(error);
+    console.log(`${errorCode} - ${errorMessage}`)
     // ...
   });
 });
