@@ -7,7 +7,7 @@ import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/fi
 import { GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
-
+.
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
@@ -33,6 +33,8 @@ const signoutCard = document.querySelector('#signout-card');
 const googleSigninButton = document.querySelector('#google-signin-button');
 const emailHolder = document.querySelector('#email-holder');
 const googleSignoutButton = document.querySelector('#google-signout-button');
+const homeHandle = document.querySelector('#home-handle');
+const dashHandle = document.querySelector('#dash-handle');
 
 // check if signed in
 onAuthStateChanged(auth, (user) => {
@@ -40,10 +42,14 @@ onAuthStateChanged(auth, (user) => {
         // User is signed in, see docs for a list of available properties
         // https://firebase.google.com/docs/reference/js/firebase.User
         signoutCard.classList.remove('d-none');
+        dashHandle.classList.remove('d-none');
         if(!signinCard.classList.contains('d-none')) signinCard.classList.add('d-none');
+        if(!homeHandle.classList.contains('d-none')) dashHandle.classList.add('d-none');
         emailHolder.innerHTML = user.email;
     } else {
         signinCard.classList.remove('d-none');
+        homeHandle.classList.remove('d-none');
+        if(!dashHandle.classList.contains('d-none')) dashHandle.classList.add('d-none');
         if(!signoutCard.classList.contains('d-none')) signoutCard.classList.add('d-none');
         console.log('not signed in');
     }
