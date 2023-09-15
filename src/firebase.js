@@ -43,7 +43,7 @@ firebase.auth().onAuthStateChanged((user) => {
     }
 });
 
-document.addEventListener('click', ()=>{
+googleSigninButton.addEventListener('click', ()=>{
     // sign in to google
     signInWithPopup(auth, provider)
   .then((result) => {
