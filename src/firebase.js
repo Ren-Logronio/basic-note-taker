@@ -2,11 +2,12 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-analytics.js";
-import { getFirestore, collection, query, where, getDocs, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js";
+import { getFirestore, collection, query, where, getDocs, deleteDoc, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
 import { GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
+
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -31,10 +32,14 @@ const notesRef = collection(db, 'notes');
 let userId = null;
 let user = null;
 
-const liClass = "list-group-item list-group-item-action d-flex justify-content-between".split(/\s+/);
-const pClass = "h6 text-start align-self-center m-0 p-0".split(/\s+/);
-const divClass = "d-flex justify-content-end".split(/\s+/);
-const aDeleteClass = "ms-1 btn btn-outline-danger d-flex justify-center align-center".split(/\s+/);
+const liClass = "list-group-item list-group-item-action".split(/\s+/);
+    const viewDivClass = "d-flex justify-content-between".split(/\s+/);
+        const pClass = "h6 text-start align-self-center m-0 p-0".split(/\s+/);
+        const divClass = "d-flex justify-content-end".split(/\s+/);
+            const aDeleteClass = "ms-1 btn btn-outline-danger d-flex justify-center align-center".split(/\s+/);
+    const contentDivClass = "mt-2";
+        const contentClass = "".split(/\s+/);
+
 
 const noteTitleInput = document.querySelector('#note-title-input');
 const noteContentInput = document.querySelector('#note-content-input');
@@ -65,20 +70,7 @@ onAuthStateChanged(auth, (user) => {
         userId = user.uid;
 
         // get notes
-        const q = query(notesRef, where("uid", "==", user.uid));
-        getDocs(q).then((querySnapshot) => {
-            let notes = [];
-            querySnapshot.forEach((doc) => {
-                // doc.data() is never undefined for query doc snapshots
-                notes.push(doc.data());
-            });
-            if(notes.length > 0){
-                if(!noteEmptyHandle.classList.contains('d-none')) noteEmptyHandle.classList.add('d-none');
-                appendLists(notes);
-            }
-        }).catch((error) => {
-            console.log("Error getting documents: ", error);
-        });
+        reloadList();
     } else {
         signinCard.classList.remove('d-none');
         homeHandle.classList.remove('d-none');
@@ -131,8 +123,10 @@ googleSigninButton.addEventListener('click', ()=>{
 });
 
 function reloadList(){
+    // remove list element
+    noteList.innerHTML = '';
     // re-query list
-    const q = query(notesRef, where("uid", "==", userId));
+    const q = query(notesRef, orderBy("date", "desc"), where("uid", "==", userId));
     getDocs(q).then((querySnapshot) => {
         let notes = [];
         querySnapshot.forEach((doc) => {
@@ -142,25 +136,30 @@ function reloadList(){
         if(notes.length > 0){
             if(!noteEmptyHandle.classList.contains('d-none')) noteEmptyHandle.classList.add('d-none');
             appendLists(notes);
+        } else {
+            if(noteEmptyHandle.classList.contains('d-none')) noteEmptyHandle.classList.remove('d-none');
         }
     }).catch((error) => {
         console.log("Error getting documents: ", error);
     });
 };
 
-function appendToList(id, title) {
-    let li = document.createElement('li');
+function appendToList(id, title, content) {
+    const li = document.createElement('li');
     li.id = id;
     li.classList.add(...liClass);
+
+    const viewDiv = document.createElement('div');
+    viewDiv.classList.add(...viewDivClass);
     
-    let p = document.createElement('p');
+    const p = document.createElement('p');
     p.classList.add(...pClass);
     p.innerHTML = title;
     
-    let div = document.createElement('div');
+    const div = document.createElement('div');
     div.classList.add(...divClass);
 
-    let aDelete = document.createElement('a');
+    const aDelete = document.createElement('a');
     aDelete.addEventListener('click', ()=>{
         removeList(id);
     });
@@ -169,15 +168,26 @@ function appendToList(id, title) {
 
     div.appendChild(aDelete);
 
-    li.appendChild(p);
-    li.appendChild(div);
+    viewDiv.appendChild(p);
+    viewDiv.appendChild(div);
+
+    const contentDiv = document.createElement('div');
+    contentDiv.classList.add(contentDivClass);
+
+    const contentP = document.createElement('p');
+    contentP.innerHTML = content;
+
+    contentDiv.appendChild(contentP);
+
+    li.appendChild(viewDiv);
+    li.appendChild(contentDiv);
 
     noteList.appendChild(li);
 }
 
 function appendLists(notes){
     notes.forEach(note => {
-        appendToList(note.id, note.title);
+        appendToList(note.id, note.title, note.content);
     });
 }
 
@@ -187,18 +197,29 @@ function removeList(id){
     getDocs(q).then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
             // doc.data() is never undefined for query doc snapshots
-            deleteDoc(doc.ref);
+            deleteDoc(doc.ref).then(()=>{
+                console.log('note deleted');
+                reloadList();
+            }).catch((error)=>{
+                console.log(error);
+            });
         });
         // remove note from list
         document.getElementById(id).remove();
         // check if list is empty
-        reloadList();
+        
     }).catch((error) => {
         console.log("Error getting documents: ", error);
     });
 }
 
 function addNote(){
+    if(!noteTitleInput.value || !noteContentInput.value) {
+        alert('Error: Title and or content cannot be empty');
+        noteTitleInput.value = '';
+        noteContentInput.value = '';
+        return;
+    };
     if(userId){
         // add note to firestore
         const noteId = create_UUID();
@@ -215,7 +236,7 @@ function addNote(){
         };
         addDoc(notesRef, note).then(()=>{
             // add note to list
-            appendToList(noteId, noteTitle);
+            reloadList();
         }).catch((error)=>{
             console.log(error);
             alert('Error adding note');
@@ -223,6 +244,8 @@ function addNote(){
     } else {
         console.log('not signed in');
     }
+    noteTitleInput.value = '';
+    noteContentInput.value = '';
 }
 
 function create_UUID(){
