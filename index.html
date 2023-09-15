@@ -14,19 +14,26 @@
         <script type="module" src="./src/firebase.js"></script>
     </head>
     <body>
+        <div class="container container-fluid">
+            <noscript>Javascript is required to run this app</noscript>
+            <!--[if lt IE 7]>
+                <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
+            <![endif]-->
+            <div class="text-center mt-5">
+                <h1>BASIC NOTE TAKER</h1>
+                <h6>By Ren-Logronio</h6>
+            </div>
 
-        <noscript>Javascript is required to run this app</noscript>
-        <!--[if lt IE 7]>
-            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
-        <![endif]-->
-        <h1>BASIC NOTE TAKER</h1>
-        <h6>By Ren-Logronio</h6>
+            <div id="signin-card" class="d-none">
+                <p>Sign-in</p>
+                <a id="google-signin-button" class="btn btn-primary" href="#">Google</a>
+            </div>
 
-        <div id="signin-card" class="d-none">
-            <p>Sign-in</p>
-            <a id="google-signin-button">Google</a>
+            <div id="signout-card" class="d-none rounded-2 shadow-sm border border-1 border-light">
+                <span id="email-holder">x@x.x</span>
+                <a id="google-signout-button" class="btn btn-outline-dark">Sign Out</a>
+            </div>
         </div>
-
         <script type="text/javascript" src="./lib/bootstrap-5.1.3-dist/bootstrap-5.1.3-dist/js/bootstrap.min.js"></script>
     </body>
 </html>

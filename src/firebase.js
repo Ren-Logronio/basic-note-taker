@@ -29,25 +29,38 @@ const auth = getAuth();
 auth.languageCode = 'it';
 
 const signinCard = document.querySelector('#signin-card');
+const signoutCard = document.querySelector('#signout-card');
 const googleSigninButton = document.querySelector('#google-signin-button');
+const emailHolder = document.querySelector('#email-holder');
+const googleSignoutButton = document.querySelector('#google-signout-button');
 
 // check if signed in
 onAuthStateChanged(auth, (user) => {
     if (user) {
         // User is signed in, see docs for a list of available properties
         // https://firebase.google.com/docs/reference/js/firebase.User
+        signoutCard.classList.remove('d-none');
+        if(!signinCard.classList.contains('d-none')) signinCard.classList.add('d-none');
+        emailHolder.innerHTML = user.email;
     } else {
         signinCard.classList.remove('d-none');
+        if(!signoutCard.classList.contains('d-none')) signoutCard.classList.add('d-none');
         console.log('not signed in');
     }
 });
 
-signOut(auth).then(() => {
-    // Sign-out successful.
-    console.log('signed out');
-}).catch((error) => {
-    // An error happened.
-    console.log('error signing out');
+googleSignoutButton.addEventListener('click', ()=>{
+    signOut(auth).then(() => {
+        // Sign-out successful.
+        console.log('signed out');
+        signoutCard.classList.add('d-none');
+        document.cookie = JSON.stringify({token: '', user: ''});
+        emailHolder.innerHTML = '';
+        signout
+    }).catch((error) => {
+        // An error happened.
+        console.log(error);
+    });
 });
 
 googleSigninButton.addEventListener('click', ()=>{
@@ -61,8 +74,8 @@ googleSigninButton.addEventListener('click', ()=>{
     // The signed-in user info.
     // IdP data available using getAdditionalUserInfo(result)
     // ...
-
     // alert user welcom
+    emailHolder.innerHTML = resultUser.email;
 
     }).catch((error) => {
         // Handle Errors here.
