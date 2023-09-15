@@ -58,6 +58,7 @@ onAuthStateChanged(auth, (user) => {
         // https://firebase.google.com/docs/reference/js/firebase.User
         signoutCard.classList.remove('d-none');
         dashHandle.classList.remove('d-none');
+        noteDash.classList.remove('d-none');
         if(!signinCard.classList.contains('d-none')) signinCard.classList.add('d-none');
         if(!homeHandle.classList.contains('d-none')) dashHandle.classList.add('d-none');
         emailHolder.innerHTML = user.email;
