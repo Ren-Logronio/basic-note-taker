@@ -7,7 +7,7 @@ import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/fi
 import { GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
-/
+
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
@@ -67,15 +67,15 @@ googleSigninButton.addEventListener('click', ()=>{
     // sign in to google
     signInWithPopup(auth, provider).then((result) => {
     // This gives you a Google Access Token. You can use it to access the Google API.
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    const resultToken = credential.accessToken;
-    const resultUser = result.user;
-    document.cookie = JSON.stringify({token: `${resultToken}`, user: resultUser})
-    // The signed-in user info.
-    // IdP data available using getAdditionalUserInfo(result)
-    // ...
-    // alert user welcom
-    emailHolder.innerHTML = resultUser.email;
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const resultToken = credential.accessToken;
+        const resultUser = result.user;
+        document.cookie = JSON.stringify({token: `${resultToken}`, user: resultUser});
+        // The signed-in user info.
+        // IdP data available using getAdditionalUserInfo(result)
+        // ...
+        // alert user welcom
+        emailHolder.innerHTML = resultUser.email;
 
     }).catch((error) => {
         // Handle Errors here.
