@@ -2,7 +2,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-analytics.js";
-import { getFirestore, collection, query, where, getDocs, deleteDoc, addDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js";
+import { getFirestore, collection, query, where, getDocs, deleteDoc, addDoc, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
 import { GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -36,6 +36,7 @@ const liClass = "list-group-item list-group-item-action".split(/\s+/);
     const viewDivClass = "d-flex justify-content-between".split(/\s+/);
         const pClass = "h6 text-start align-self-center m-0 p-0".split(/\s+/);
         const divClass = "d-flex justify-content-end".split(/\s+/);
+            const aEditClass = "ms-1 btn btn-outline-primary d-flex justify-center align-center".split(/\s+/);
             const aDeleteClass = "ms-1 btn btn-outline-danger d-flex justify-center align-center".split(/\s+/);
     const contentDivClass = "mt-2";
         const contentClass = "".split(/\s+/);
@@ -44,17 +45,27 @@ const liClass = "list-group-item list-group-item-action".split(/\s+/);
 const noteTitleInput = document.querySelector('#note-title-input');
 const noteContentInput = document.querySelector('#note-content-input');
 const addNoteButton = document.querySelector('#add-note-button');
+const addNoteAnchor = document.querySelector('#add-note-anchor');
+
+const editNoteModal = document.querySelector('#edit-note-modal');
+const editNoteIdInput = document.querySelector('#edit-note-id-input');
+const editNoteTitleInput = document.querySelector('#edit-note-title-input');
+const editNoteContentInput = document.querySelector('#edit-note-content-input');
+const editNoteButton = document.querySelector('#edit-note-button');
 
 const signinCard = document.querySelector('#signin-card');
 const signoutCard = document.querySelector('#signout-card');
 const googleSigninButton = document.querySelector('#google-signin-button');
-const emailHolder = document.querySelector('#email-holder');
+const nameHolder = document.querySelector('#email-holder');
 const googleSignoutButton = document.querySelector('#google-signout-button');
 const homeHandle = document.querySelector('#home-handle');
 const dashHandle = document.querySelector('#dash-handle');
 const noteDash = document.querySelector('#note-dash');
 const noteList = document.querySelector('#note-list');
 const noteEmptyHandle = document.querySelector('#note-empty-handle');
+const userHandle = document.querySelector('#user-handle');
+const addCancel = document.querySelector('#add-cancel');
+const editCancel = document.querySelector('#edit-cancel');
 
 // check if signed in
 onAuthStateChanged(auth, (user) => {
@@ -64,16 +75,31 @@ onAuthStateChanged(auth, (user) => {
         signoutCard.classList.remove('d-none');
         dashHandle.classList.remove('d-none');
         noteDash.classList.remove('d-none');
+        addNoteAnchor.classList.remove('d-none');
         if(!signinCard.classList.contains('d-none')) signinCard.classList.add('d-none');
         if(!homeHandle.classList.contains('d-none')) dashHandle.classList.add('d-none');
-        emailHolder.innerHTML = user.email;
+        
         userId = user.uid;
+
+        const userProfilePicture = user.photoURL;
+        const userProfileName = user.displayName;
+        
+        nameHolder.innerHTML = userProfileName;
+
+        const userImage = document.createElement('img');
+        userImage.src = userProfilePicture;
+        userImage.classList.add('rounded-circle', 'me-2', 'align-self-center', 'mt-auto', 'mb-auto');
+        userImage.style.width = '30px';
+        userImage.style.height = '30px';
+
+        userHandle.insertBefore(userImage, userHandle.firstChild);
 
         // get notes
         reloadList();
     } else {
         signinCard.classList.remove('d-none');
         homeHandle.classList.remove('d-none');
+        if(!addNoteAnchor.classList.contains('d-none')) addNoteAnchor.classList.add('d-none');
         if(!noteDash.classList.contains('d-none')) noteDash.classList.add('d-none');
         if(!dashHandle.classList.contains('d-none')) dashHandle.classList.add('d-none');
         if(!signoutCard.classList.contains('d-none')) signoutCard.classList.add('d-none');
@@ -87,7 +113,7 @@ googleSignoutButton.addEventListener('click', ()=>{
         // Sign-out successful.
         console.log('signed out');
         signoutCard.classList.add('d-none');
-        emailHolder.innerHTML = '';
+        nameHolder.innerHTML = '';
         signout
     }).catch((error) => {
         // An error happened.
@@ -107,7 +133,7 @@ googleSigninButton.addEventListener('click', ()=>{
         // IdP data available using getAdditionalUserInfo(result)
         // ...
         // alert user welcom
-        emailHolder.innerHTML = resultUser.email;
+        nameHolder.innerHTML = resultUser.email;
 
     }).catch((error) => {
         // Handle Errors here.
@@ -166,6 +192,14 @@ function appendToList(id, title, content) {
     aDelete.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z"/></svg>`;
     aDelete.classList.add(...aDeleteClass);
 
+    const aEdit = document.createElement('a');
+    aEdit.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/></svg>`;
+    aEdit.classList.add(...aEditClass);
+    aEdit.addEventListener('click', ()=>{
+        editNote(id, title, content);
+    });
+
+    div.appendChild(aEdit);
     div.appendChild(aDelete);
 
     viewDiv.appendChild(p);
@@ -189,6 +223,53 @@ function appendLists(notes){
     notes.forEach(note => {
         appendToList(note.id, note.title, note.content);
     });
+}
+
+function editNote (id, title, content){
+    editNoteIdInput.value = id;
+    editNoteTitleInput.value = title;
+    editNoteContentInput.value = content;
+    $('#edit-note-modal').modal('show');
+}
+
+function confirmEditNote(){
+    const id = editNoteIdInput.value;
+    const title = editNoteTitleInput.value;
+    const content = editNoteContentInput.value;
+    if(!title || !content || !id) {
+        alert('Error: Title and or content cannot be empty');
+        return;
+    };
+    if(userId){
+        // edit note to firestore
+        const note = {
+            id: id,
+            title: title,
+            content: content,
+            uid: userId
+        };
+        const q = query(notesRef, where("id", "==", id));
+        getDocs(q).then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                // doc.data() is never undefined for query doc snapshots
+                updateDoc(doc.ref, note).then(()=>{
+                    // update note to list
+                    reloadList();
+                }).catch((error)=>{
+                    console.log(error);
+                    alert('Error updating note');
+                });
+            });
+        }).catch((error) => {
+            console.log("Error getting documents: ", error);
+        });
+    } else {
+        console.log('not signed in');
+    }
+    editNoteIdInput.value = '';
+    editNoteTitleInput.value = '';
+    editNoteContentInput.value = '';
+    $('#edit-note-modal').modal('hide');
 }
 
 function removeList(id){
@@ -260,5 +341,15 @@ function create_UUID(){
 
 document.addEventListener('DOMContentLoaded', ()=>{
     addNoteButton.addEventListener('click', ()=>{ addNote(); });
+    editNoteButton.addEventListener('click', ()=>{ confirmEditNote(); });
+    addCancel.addEventListener('click', ()=>{
+        noteTitleInput.value = '';
+        noteContentInput.value = '';
+    });
+    editCancel.addEventListener('click', ()=>{
+        editNoteIdInput.value = '';
+        editNoteTitleInput.value = '';
+        editNoteContentInput.value = '';
+    });
 });
 

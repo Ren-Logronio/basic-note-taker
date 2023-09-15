@@ -7,11 +7,16 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>NoTeePie</title>
+        <title>Basic Beach Notes</title>
         <meta name="description" content="">
+        <link rel="icon" href="./favicon.png" type="image/png">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="./lib/bootstrap-5.1.3-dist/bootstrap-5.1.3-dist/css/bootstrap.min.css">
         <script type="module" src="./src/firebase.js"></script>
+        <script
+                src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
+                integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8="
+                crossorigin="anonymous"></script>
         <style>
             .text-gray {
                 color: #6c757d;
@@ -25,12 +30,12 @@
                 <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
             <![endif]-->
             <div id="home-handle" class="d-none d-flex flex-column text-center mt-5">
-                <h1>🏖️ Basic Beach Note</h1>
+                <h1>&#127958; Basic Beach Note</h1>
                 <h6>Author - Ren-Logronio</h6>
             </div>
 
-            <div id="dash-handle" class="text-start mt-4">
-                <h3>🏖️ Basic Beach Notes</h6>
+            <div id="dash-handle" class="d-none text-start mt-4">
+                <h3>&#127958; Basic Beach Notes</h6>
             </div>
 
             
@@ -38,21 +43,21 @@
                 style="height: 300px;">
                 <div class="mt-auto mb-auto p-3 d-flex flex-column justify-content-center border border-1 border-light rounded-2 shadow-lg"
                     style="width: 500px; height: 200px;">
-                    <p class="text-center">Welcome <span></span></p>
+                    <p class="h2 text-center">Welcome Back<span></span></p>
                     <a id="google-signin-button" class="btn btn-primary" href="#">Sign in with Google</a>
                 </div>
             </div>
 
             <div id="signout-card" class="d-none d-flex flex-column flex-md-row justify-content-between px-5 py-2 rounded-2 shadow-sm border border-1 border-light">
-                <div class="text-center" class="d-flex flex-row justify-content-start align-content-center">
+                <div id="user-handle" class="text-center d-flex flex-row justify-content-start align-content-center">
                     <span id="email-holder" class="text-center ms-2 align-self-center">x@x.x</span>
                 </div>
                 <a id="google-signout-button" class="btn btn-outline-dark">Sign Out</a>
             </div>
 
             <div id="note-dash" class="mt-3 p-2 px-md-5 ">
-                <a class="btn btn-outline-success" href="#" data-bs-toggle="modal" data-bs-target="#add-note-modal">Add Note</a>
-                <p id="note-empty-handle" class="text-gray fst-italic text-center">Note List is Empty</p>
+                <a id="add-note-anchor" class="d-none btn btn-outline-success" href="#" data-bs-toggle="modal" data-bs-target="#add-note-modal">Add Note</a>
+                <p id="note-empty-handle" class="d-none text-gray fst-italic text-center">Note List is Empty</p>
                 <ol id="note-list" class="list list-group list-unstyled mt-2">
                     
                     <!--
@@ -79,7 +84,6 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">Add Note</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <form>
@@ -94,8 +98,35 @@
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancel</button>
+                            <button id="add-cancel" type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancel</button>
                             <button id="add-note-button" type="button" data-bs-dismiss="modal" class="btn btn-success">Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="edit-note-modal" class="modal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit Note</h5>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <input id="edit-note-id-input" type="hidden" class="form-control">
+                                <div class="form-floating mb-2">
+                                    <input id="edit-note-title-input" type="text" class="form-control" placeholder="Note Title">
+                                    <label for="note-title-input">Title</label>
+                                </div>
+                                <div class="form-floating mb-2">
+                                    <textarea id="edit-note-content-input" class="form-control" placeholder="Note Content" style="height: 100px"></textarea>
+                                    <label for="note-content-input">Content</label>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="edit-cancel" type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancel</button>
+                            <button id="edit-note-button" type="button" data-bs-dismiss="modal" class="btn btn-success">Edit</button>
                         </div>
                     </div>
                 </div>
