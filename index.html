@@ -23,14 +23,17 @@
                 <h1>BASIC NOTE TAKER</h1>
                 <h6>By Ren-Logronio</h6>
             </div>
-
-            <div id="signin-card" class="d-none">
-                <p>Sign-in</p>
-                <a id="google-signin-button" class="btn btn-primary" href="#">Google</a>
+            
+            <div class="d-flex justify-content-center m-3">
+                <div id="signin-card" class="p-3 d-flex flex-column border border-1 border-light rounded-2 shadow-lg"
+                    style="width: 500px">
+                    <p class="text-center">Sign-in with Google</p>
+                    <a id="google-signin-button" class="btn btn-primary" href="#">Google</a>
+                </div>
             </div>
 
-            <div id="signout-card" class="d-none rounded-2 shadow-sm border border-1 border-light">
-                <span id="email-holder">x@x.x</span>
+            <div id="signout-card" class="d-none d-flex flex-column flex-md-row justify-content-between px-5 py-2 rounded-2 shadow-sm border border-1 border-light">
+                <span id="email-holder" class="text-center">x@x.x</span>
                 <a id="google-signout-button" class="btn btn-outline-dark">Sign Out</a>
             </div>
         </div>
