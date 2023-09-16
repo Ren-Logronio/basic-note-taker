@@ -133,7 +133,7 @@ googleSigninButton.addEventListener('click', ()=>{
         // IdP data available using getAdditionalUserInfo(result)
         // ...
         // alert user welcom
-        nameHolder.innerHTML = resultUser.email;
+        nameHolder.innerHTML = resultUser.displayName;
 
     }).catch((error) => {
         // Handle Errors here.
