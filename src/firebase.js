@@ -31,6 +31,7 @@ auth.languageCode = 'it';
 const notesRef = collection(db, 'notes');
 let userId = null;
 let user = null;
+let userImageHandle = null;
 
 const liClass = "list-group-item list-group-item-action".split(/\s+/);
     const viewDivClass = "d-flex justify-content-between".split(/\s+/);
@@ -92,6 +93,7 @@ onAuthStateChanged(auth, (user) => {
         userImage.style.width = '30px';
         userImage.style.height = '30px';
 
+        userImageHandle = userImage;
         userHandle.insertBefore(userImage, userHandle.firstChild);
 
         // get notes
@@ -103,6 +105,10 @@ onAuthStateChanged(auth, (user) => {
         if(!noteDash.classList.contains('d-none')) noteDash.classList.add('d-none');
         if(!dashHandle.classList.contains('d-none')) dashHandle.classList.add('d-none');
         if(!signoutCard.classList.contains('d-none')) signoutCard.classList.add('d-none');
+        if(userImageHandle) {
+            userImageHandle.remove()
+            userImageHandle = null;
+        }; 
         userId = null;
         console.log('not signed in');
     }
