@@ -57,7 +57,7 @@ const editNoteButton = document.querySelector('#edit-note-button');
 const signinCard = document.querySelector('#signin-card');
 const signoutCard = document.querySelector('#signout-card');
 const googleSigninButton = document.querySelector('#google-signin-button');
-const nameHolder = document.querySelector('#email-holder');
+const nameHolder = document.querySelector('#name-holder');
 const googleSignoutButton = document.querySelector('#google-signout-button');
 const homeHandle = document.querySelector('#home-handle');
 const dashHandle = document.querySelector('#dash-handle');
@@ -67,7 +67,10 @@ const noteEmptyHandle = document.querySelector('#note-empty-handle');
 const userHandle = document.querySelector('#user-handle');
 const addCancel = document.querySelector('#add-cancel');
 const editCancel = document.querySelector('#edit-cancel');
-
+const userHandleLoading = document.querySelector('#user-handle-loading');
+const loadingElement = `<div class="d-flex spinner-border text-warning text-center align-self-center" role="status"><span class="visually-hidden">Loading...</span></div>`;
+const loadingElementSmall = `<div class="d-flex spinner-border spinner-border-sm text-warning text-center align-self-center" role="status"><span class="visually-hidden">Loading...</span></div>`;
+const asyncLoadingElement = `<div class="d-flex spinner-border spinner-border-sm text-center align-self-center" role="status"><span class="visually-hidden">Loading...</span></div>`;
 // check if signed in
 onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -78,14 +81,12 @@ onAuthStateChanged(auth, (user) => {
         noteDash.classList.remove('d-none');
         addNoteAnchor.classList.remove('d-none');
         if(!signinCard.classList.contains('d-none')) signinCard.classList.add('d-none');
-        if(!homeHandle.classList.contains('d-none')) dashHandle.classList.add('d-none');
+        if(!homeHandle.classList.contains('d-none')) homeHandle.classList.add('d-none');
         
         userId = user.uid;
 
         const userProfilePicture = user.photoURL;
         const userProfileName = user.displayName;
-        
-        nameHolder.innerHTML = userProfileName;
 
         const userImage = document.createElement('img');
         userImage.src = userProfilePicture;
@@ -93,7 +94,9 @@ onAuthStateChanged(auth, (user) => {
         userImage.style.width = '30px';
         userImage.style.height = '30px';
 
+        if(!userHandleLoading.classList.contains('d-none')) userHandleLoading.classList.add('d-none');
         userImageHandle = userImage;
+        nameHolder.innerHTML = userProfileName;
         userHandle.insertBefore(userImage, userHandle.firstChild);
 
         // get notes
@@ -120,7 +123,6 @@ googleSignoutButton.addEventListener('click', ()=>{
         console.log('signed out');
         signoutCard.classList.add('d-none');
         nameHolder.innerHTML = '';
-        signout
     }).catch((error) => {
         // An error happened.
         console.log(error);
@@ -135,12 +137,6 @@ googleSigninButton.addEventListener('click', ()=>{
         const resultToken = credential.accessToken;
         const resultUser = result.user;
         user = resultUser;
-        // The signed-in user info.
-        // IdP data available using getAdditionalUserInfo(result)
-        // ...
-        // alert user welcom
-        nameHolder.innerHTML = resultUser.displayName;
-
     }).catch((error) => {
         // Handle Errors here.
         const errorCode = error.code;
@@ -155,8 +151,8 @@ googleSigninButton.addEventListener('click', ()=>{
 });
 
 function reloadList(){
-    // remove list element
-    noteList.innerHTML = '';
+    
+    noteList.innerHTML = loadingElement;
     // re-query list
     const q = query(notesRef, orderBy("date", "desc"), where("uid", "==", userId));
     getDocs(q).then((querySnapshot) => {
@@ -170,6 +166,7 @@ function reloadList(){
             appendLists(notes);
         } else {
             if(noteEmptyHandle.classList.contains('d-none')) noteEmptyHandle.classList.remove('d-none');
+            noteList.innerHTML = '';
         }
     }).catch((error) => {
         console.log("Error getting documents: ", error);
@@ -178,13 +175,14 @@ function reloadList(){
 
 function appendToList(id, title, content) {
     const li = document.createElement('li');
+    // remove '-' from id
     li.id = id;
     li.classList.add(...liClass);
 
     const viewDiv = document.createElement('div');
     viewDiv.classList.add(...viewDivClass);
     
-    const p = document.createElement('p');
+    const p = document.createElement('h6');
     p.classList.add(...pClass);
     p.innerHTML = title;
     
@@ -192,8 +190,11 @@ function appendToList(id, title, content) {
     div.classList.add(...divClass);
 
     const aDelete = document.createElement('a');
-    aDelete.addEventListener('click', ()=>{
-        removeList(id);
+    aDelete.addEventListener('click', (event)=>{
+        const currentTarget = event.currentTarget;
+        const successElement = currentTarget.innerHTML;
+        currentTarget.innerHTML = asyncLoadingElement;
+        removeList(id, currentTarget, successElement);
     });
     aDelete.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z"/></svg>`;
     aDelete.classList.add(...aDeleteClass);
@@ -202,7 +203,7 @@ function appendToList(id, title, content) {
     aEdit.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/></svg>`;
     aEdit.classList.add(...aEditClass);
     aEdit.addEventListener('click', ()=>{
-        editNote(id, title, content);
+        editNote(id);
     });
 
     div.appendChild(aEdit);
@@ -222,19 +223,24 @@ function appendToList(id, title, content) {
     li.appendChild(viewDiv);
     li.appendChild(contentDiv);
 
-    noteList.appendChild(li);
+    return li;
 }
 
 function appendLists(notes){
+    noteList.innerHTML = '';
     notes.forEach(note => {
-        appendToList(note.id, note.title, note.content);
+        const li = appendToList(note.id, note.title, note.content);
+        noteList.appendChild(li);
     });
 }
 
-function editNote (id, title, content){
+function editNote (id){
+    const li = document.getElementById(id);
+    const h6 = li.querySelector('h6');
+    const content = li.querySelector('p');
     editNoteIdInput.value = id;
-    editNoteTitleInput.value = title;
-    editNoteContentInput.value = content;
+    editNoteTitleInput.value = h6.innerHTML;
+    editNoteContentInput.value = content.innerHTML;
     $('#edit-note-modal').modal('show');
 }
 
@@ -242,10 +248,22 @@ function confirmEditNote(){
     const id = editNoteIdInput.value;
     const title = editNoteTitleInput.value;
     const content = editNoteContentInput.value;
+    const li = document.getElementById(id);
+    const p = li.querySelector('p');
+    const h6 = li.querySelector('h6');
     if(!title || !content || !id) {
         alert('Error: Title and or content cannot be empty');
         return;
-    };
+    } else {
+        if(p.innerHTML != content) {
+            console.log('content changed');
+            p.innerHTML = loadingElementSmall;
+        }
+        if(h6.innerHTML != title) {
+            console.log('title changed');
+            h6.innerHTML = loadingElementSmall;
+        }
+    }
     if(userId){
         // edit note to firestore
         const note = {
@@ -260,7 +278,8 @@ function confirmEditNote(){
                 // doc.data() is never undefined for query doc snapshots
                 updateDoc(doc.ref, note).then(()=>{
                     // update note to list
-                    reloadList();
+                    h6.innerHTML = title;
+                    p.innerHTML = content;
                 }).catch((error)=>{
                     console.log(error);
                     alert('Error updating note');
@@ -278,7 +297,7 @@ function confirmEditNote(){
     $('#edit-note-modal').modal('hide');
 }
 
-function removeList(id){
+function removeList(id, currentTarget, successElement){
     // delete note from firestore
     const q = query(notesRef, where("id", "==", id));
     getDocs(q).then((querySnapshot) => {
@@ -286,16 +305,17 @@ function removeList(id){
             // doc.data() is never undefined for query doc snapshots
             deleteDoc(doc.ref).then(()=>{
                 console.log('note deleted');
-                reloadList();
+                document.getElementById(id).remove();
+                if(noteList.innerHTML === '') {
+                    if(noteEmptyHandle.classList.contains('d-none')) noteEmptyHandle.classList.remove('d-none');
+                }
             }).catch((error)=>{
+                currentTarget.innerHTML = successElement;
                 console.log(error);
             });
         });
-        // remove note from list
-        document.getElementById(id).remove();
-        // check if list is empty
-        
     }).catch((error) => {
+        currentTarget.innerHTML = successElement;
         console.log("Error getting documents: ", error);
     });
 }
@@ -323,7 +343,8 @@ function addNote(){
         };
         addDoc(notesRef, note).then(()=>{
             // add note to list
-            reloadList();
+            const li = appendToList(noteId, noteTitle, noteContent);
+            noteList.prepend(li);
         }).catch((error)=>{
             console.log(error);
             alert('Error adding note');
