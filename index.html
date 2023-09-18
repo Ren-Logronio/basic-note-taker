@@ -39,9 +39,10 @@
                 background-image: url("./asset/beach.jpg");
                 background-size: cover;
                 background-repeat: no-repeat;
+                background-attachment: fixed;
                 background-position: center;
                 width: 100%;
-                height: 100%;
+                height: 100%;   
                 opacity: 0.35;
             }
         </style>
@@ -162,7 +163,7 @@
                 </div>
             </div>
         </div>
-        <div class="position-absolute top-0 start-0 z-back overflow-hidden beach-background">
+        <div class="position-fixed min-vh-100 min-vw-100 top-0 start-0 z-back overflow-hidden beach-background">
         </div>
         <script type="text/javascript" src="./lib/bootstrap-5.1.3-dist/bootstrap-5.1.3-dist/js/bootstrap.min.js"></script>
     </body>
